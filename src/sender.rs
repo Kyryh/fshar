@@ -13,6 +13,7 @@ pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
 
     let num_files = files.len() as u32;
     stream.write_num(&num_files)?;
+    println!("Sending {num_files} files to {}", stream.peer_addr()?);
 
     for (rel_path, abs_path) in files {
         let rel_path_str = rel_path.to_string_lossy();
@@ -47,6 +48,8 @@ pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
         }
         println!("\r{rel_path:?}: 100.00%");
     }
+    println!("Done");
+
     Ok(())
 }
 

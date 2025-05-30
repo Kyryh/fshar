@@ -10,7 +10,7 @@ use crate::num_io::{NumReader as _, NumWriter as _};
 
 pub fn receive(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
     let num_files = stream.read_num::<u32>()?;
-    println!("Receiving {} files...", num_files);
+    println!("Receiving {num_files} files from {}", stream.peer_addr()?);
 
     for _ in 0..num_files {
         let path_len = stream.read_num::<u32>()? as usize;
@@ -58,6 +58,7 @@ pub fn receive(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
 
         println!("\r{rel_path:?}: 100.00%");
     }
+    println!("Done");
 
     Ok(())
 }
