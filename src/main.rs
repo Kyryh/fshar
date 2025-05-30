@@ -60,7 +60,7 @@ fn args() -> Command {
         )
 }
 
-fn main() {
+fn main() -> io::Result<()> {
     let args = args().get_matches();
 
     let mode = args.get_one::<String>("mode").unwrap();
