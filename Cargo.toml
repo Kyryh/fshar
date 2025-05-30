@@ -1,0 +1,8 @@
+[package]
+name = "fshar"
+description = "File sharing via TCP"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+clap = "4.5.39"
