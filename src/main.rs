@@ -77,7 +77,7 @@ fn main() {
                 "receiver" => {
                     todo!()
                 }
-                _ => unsafe { unreachable_unchecked() },
+                _ => unreachable!(),
             }
         }
     }
