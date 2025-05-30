@@ -1,6 +1,6 @@
 use std::io::{self, Read, Write};
 
-trait Number: Sized {
+pub trait Number: Sized {
     fn read_num(reader: &mut impl Read) -> io::Result<Self>;
     fn write_num(&self, writer: &mut impl Write) -> io::Result<()>;
 }
