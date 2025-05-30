@@ -1,12 +1,45 @@
-use clap::Command;
+use std::hint::unreachable_unchecked;
+
+use clap::{Arg, Command};
 
 fn args() -> Command {
     Command::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
+        .arg(
+            Arg::new("mode")
+                .value_parser(["server-sender", "server-receiver", "client"])
+                .help(concat!(
+                    "File sharing mode\n",
+                    "\u{2022} server-sender: Send all files in folder to the client\n",
+                    "\u{2022} server-receiver: Receive all files in client's folder\n",
+                    "\u{2022} client: Send/receive files to/from server, depending on server's mode"
+                ))
+                .hide_possible_values(true)
+                .required(true),
+        )
 }
 
 fn main() {
-    let args = args();
-    args.get_matches();
+    let args = args().get_matches();
+
+    let mode = args.get_one::<String>("mode").unwrap();
+    match mode.as_ref() {
+        s if s.starts_with("server-") => {
+            let server_mode = &s[7..];
+            match server_mode {
+                "sender" => {
+                    todo!()
+                }
+                "receiver" => {
+                    todo!()
+                }
+                _ => unsafe { unreachable_unchecked() },
+            }
+        }
+        "client" => {
+            todo!()
+        }
+        _ => unsafe { unreachable_unchecked() },
+    }
 }
