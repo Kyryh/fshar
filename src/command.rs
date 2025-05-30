@@ -32,6 +32,8 @@ pub fn args() -> Command {
                     "Server: port to listen on\n",
                     "Client: port to connect to\n"
                 ))
+                .long("server-port")
+                .short('p')
                 .value_parser(value_parser!(u16))
                 .default_value("931"),
         )
@@ -42,6 +44,8 @@ pub fn args() -> Command {
                     "\u{2022} `mode` is `server-sender`\n",
                     "\u{2022} `mode` is `client` with a `server-receiver` server\n",
                 ))
+                .long("input-folder")
+                .short('i')
                 .value_hint(ValueHint::DirPath)
                 .value_parser(value_parser!(PathBuf))
                 .default_value("./in"),
@@ -53,6 +57,8 @@ pub fn args() -> Command {
                     "\u{2022} `mode` is `server-receiver`\n",
                     "\u{2022} `mode` is `client` with a `server-sender` server\n",
                 ))
+                .long("output-folder")
+                .short('o')
                 .value_hint(ValueHint::DirPath)
                 .value_parser(value_parser!(PathBuf))
                 .default_value("./out"),
@@ -63,6 +69,7 @@ pub fn args() -> Command {
                     "If the server should keep listening after sending files to the client",
                 ))
                 .long("keep-listening")
+                .short('k')
                 .action(ArgAction::SetTrue),
         )
 }
