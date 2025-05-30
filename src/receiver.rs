@@ -1,12 +1,12 @@
 use std::{
     fs,
-    io::{self, Read as _, Write as _},
+    io::{self, Read as _, Seek as _, Write as _},
     net::TcpStream,
     path::{Path, PathBuf},
     time::{Duration, Instant},
 };
 
-use crate::num_io::NumReader;
+use crate::num_io::{NumReader as _, NumWriter as _};
 
 pub fn receive(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
     let num_files = stream.read_num::<u32>()?;
@@ -26,11 +26,20 @@ pub fn receive(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
             fs::create_dir_all(parent)?;
         }
 
-        let mut file = fs::File::create(&full_path)?;
+        let mut file = fs::OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(full_path)?;
 
         let file_len = stream.read_num::<u64>()?;
         let mut buf = [0; 64 * 1024];
-        let mut total_read = 0;
+        let mut total_read = {
+            let already_written = file.metadata()?.len();
+            stream.write_num(&already_written)?;
+            file.seek_relative(already_written as i64)?;
+            already_written
+        };
+
         let mut elapsed = Instant::now();
         while total_read < file_len {
             let read =

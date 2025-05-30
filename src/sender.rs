@@ -1,12 +1,12 @@
 use std::{
     fs,
-    io::{self, Read as _, Write as _},
+    io::{self, Read as _, Seek as _, Write as _},
     net::TcpStream,
     path::{Path, PathBuf},
     time::{Duration, Instant},
 };
 
-use crate::num_io::NumWriter as _;
+use crate::num_io::{NumReader as _, NumWriter as _};
 
 pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
     let files = collect_files(folder, folder)?;
@@ -25,7 +25,11 @@ pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
         stream.write_num(&file_len)?;
         let mut buf = [0; 64 * 1024];
         let mut elapsed = Instant::now();
-        let mut total_written = 0;
+        let mut total_written = {
+            let already_written = stream.read_num::<u64>()?;
+            file.seek_relative(already_written as i64)?;
+            already_written as usize
+        };
         while let Ok(n) = file.read(&mut buf) {
             if n == 0 {
                 break;
