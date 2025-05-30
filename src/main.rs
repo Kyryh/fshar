@@ -1,5 +1,4 @@
 use std::{
-    hint::unreachable_unchecked,
     io,
     net::{TcpListener, TcpStream},
     path::PathBuf,
