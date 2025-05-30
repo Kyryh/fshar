@@ -25,17 +25,17 @@ pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
         stream.write_num(&file_len)?;
         let mut buf = [0; 64 * 1024];
         let mut elapsed = Instant::now();
-        let mut total_wrote = 0;
+        let mut total_written = 0;
         while let Ok(n) = file.read(&mut buf) {
             if n == 0 {
                 break;
             }
-            total_wrote += n;
+            total_written += n;
             stream.write_all(&buf[..n])?;
             if elapsed.elapsed() > Duration::from_secs(1) {
                 print!(
                     "\r{rel_path:?}: {:.2}%",
-                    total_wrote as f32 / file_len as f32 * 100.0
+                    total_written as f32 / file_len as f32 * 100.0
                 );
                 io::stdout().flush()?;
                 elapsed = Instant::now();
