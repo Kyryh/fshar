@@ -1,4 +1,4 @@
-use clap::{Arg, Command, ValueHint, builder::styling::Style, value_parser};
+use clap::{Arg, ArgAction, Command, ValueHint, builder::styling::Style, value_parser};
 use std::path::PathBuf;
 
 pub fn args() -> Command {
@@ -56,5 +56,13 @@ pub fn args() -> Command {
                 .value_hint(ValueHint::DirPath)
                 .value_parser(value_parser!(PathBuf))
                 .default_value("./out"),
+        )
+        .arg(
+            Arg::new("keep-listening")
+                .help(concat!(
+                    "If the server should keep listening after sending files to the client",
+                ))
+                .long("keep-listening")
+                .action(ArgAction::SetTrue),
         )
 }

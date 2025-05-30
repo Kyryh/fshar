@@ -54,29 +54,34 @@ fn main() -> io::Result<()> {
                 .get_one::<u16>("server-port")
                 .expect("Port should be valid");
             let listener = TcpListener::bind(("0.0.0.0", port))?;
-            let mut stream = listener.accept()?.0;
-            let server_mode = &s[7..];
-            match server_mode {
-                "sender" => {
-                    stream.write_num(&SERVER_SENDING)?;
-                    sender::send(
-                        stream,
-                        args.get_one::<PathBuf>("input-folder")
-                            .expect("Folder should be valid")
-                            .as_ref(),
-                    )
+            for mut stream in listener.incoming().filter_map(Result::ok) {
+                let server_mode = &s[7..];
+                match server_mode {
+                    "sender" => {
+                        stream.write_num(&SERVER_SENDING)?;
+                        sender::send(
+                            stream,
+                            args.get_one::<PathBuf>("input-folder")
+                                .expect("Folder should be valid")
+                                .as_ref(),
+                        )?
+                    }
+                    "receiver" => {
+                        stream.write_num(&SERVER_RECEIVING)?;
+                        receiver::receive(
+                            stream,
+                            args.get_one::<PathBuf>("output-folder")
+                                .expect("Folder should be valid")
+                                .as_ref(),
+                        )?
+                    }
+                    _ => unreachable!(),
                 }
-                "receiver" => {
-                    stream.write_num(&SERVER_RECEIVING)?;
-                    receiver::receive(
-                        stream,
-                        args.get_one::<PathBuf>("output-folder")
-                            .expect("Folder should be valid")
-                            .as_ref(),
-                    )
+                if !args.get_flag("keep-listening") {
+                    break;
                 }
-                _ => unreachable!(),
             }
+            Ok(())
         }
     }
 }
