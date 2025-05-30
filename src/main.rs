@@ -35,6 +35,15 @@ fn args() -> Command {
                 ))
                 .default_value("931"),
         )
+        .arg(
+            Arg::new("input-folder")
+                .help(concat!(
+                    "Folder to use when sending files, in case:\n",
+                    "\u{2022} `mode` is `server-sender`\n",
+                    "\u{2022} `mode` is `client` with a `server-receiver` server\n",
+                ))
+                .default_value("./in"),
+        )
 }
 
 fn main() {
