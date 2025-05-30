@@ -3,14 +3,15 @@ use std::{
     net::{TcpListener, TcpStream},
 };
 
+mod command;
 mod num_io;
+mod receiver;
+mod sender;
 
 use num_io::*;
 
 const SERVER_SENDING: u8 = 0;
 const SERVER_RECEIVING: u8 = 1;
-
-mod command;
 
 fn main() -> io::Result<()> {
     let args = command::args().get_matches();
@@ -32,8 +33,8 @@ fn main() -> io::Result<()> {
             let server_mode = stream.read_num()?;
 
             match server_mode {
-                SERVER_SENDING => receive(stream),
-                SERVER_RECEIVING => send(stream),
+                SERVER_SENDING => receiver::receive(stream),
+                SERVER_RECEIVING => sender::send(stream),
                 _ => unreachable!(),
             }
         }
@@ -47,22 +48,14 @@ fn main() -> io::Result<()> {
             match server_mode {
                 "sender" => {
                     stream.write_num(SERVER_SENDING)?;
-                    send(stream)
+                    sender::send(stream)
                 }
                 "receiver" => {
                     stream.write_num(SERVER_RECEIVING)?;
-                    receive(stream)
+                    receiver::receive(stream)
                 }
                 _ => unreachable!(),
             }
         }
     }
-}
-
-fn send(stream: TcpStream) -> io::Result<()> {
-    Ok(())
-}
-
-fn receive(stream: TcpStream) -> io::Result<()> {
-    Ok(())
 }
