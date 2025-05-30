@@ -1,4 +1,4 @@
-use std::hint::unreachable_unchecked;
+use std::{hint::unreachable_unchecked, path::PathBuf};
 
 use clap::{Arg, Command, ValueHint, builder::styling::Style, value_parser};
 
@@ -44,6 +44,7 @@ fn args() -> Command {
                     "\u{2022} `mode` is `client` with a `server-receiver` server\n",
                 ))
                 .value_hint(ValueHint::DirPath)
+                .value_parser(value_parser!(PathBuf))
                 .default_value("./in"),
         )
         .arg(
@@ -54,6 +55,7 @@ fn args() -> Command {
                     "\u{2022} `mode` is `client` with a `server-sender` server\n",
                 ))
                 .value_hint(ValueHint::DirPath)
+                .value_parser(value_parser!(PathBuf))
                 .default_value("./out"),
         )
 }
