@@ -1,11 +1,14 @@
 use std::hint::unreachable_unchecked;
 
-use clap::{Arg, Command};
+use clap::{Arg, Command, ValueHint, builder::styling::Style};
 
 fn args() -> Command {
     Command::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
-        .about(env!("CARGO_PKG_DESCRIPTION"))
+        .about(env!("CARGO_PKG_DESCRIPTION").replace(
+            "File sharing",
+            &format!("{b}F{b:#}ile {b}shar{b:#}ing", b = Style::new().bold()),
+        ))
         .arg(
             Arg::new("mode")
                 .value_parser(["server-sender", "server-receiver", "client"])
