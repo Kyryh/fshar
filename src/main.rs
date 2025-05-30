@@ -1,6 +1,18 @@
-use std::{hint::unreachable_unchecked, path::PathBuf};
+use std::{
+    hint::unreachable_unchecked,
+    io,
+    net::{TcpListener, TcpStream},
+    path::PathBuf,
+};
 
 use clap::{Arg, Command, ValueHint, builder::styling::Style, value_parser};
+
+mod num_io;
+
+use num_io::*;
+
+const SERVER_SENDING: u8 = 0;
+const SERVER_RECEIVING: u8 = 1;
 
 fn args() -> Command {
     Command::new(env!("CARGO_PKG_NAME"))
@@ -66,19 +78,51 @@ fn main() -> io::Result<()> {
     let mode = args.get_one::<String>("mode").unwrap();
     match mode.as_ref() {
         "client" => {
-            todo!()
+            let addr = (
+                args.get_one::<String>("server-address")
+                    .expect("Address should be valid")
+                    .as_ref(),
+                *args
+                    .get_one::<u16>("server-port")
+                    .expect("Port should be valid"),
+            );
+
+            let mut stream = TcpStream::connect(addr).expect("Server should be listening");
+
+            let server_mode = stream.read_num()?;
+
+            match server_mode {
+                SERVER_SENDING => receive(stream),
+                SERVER_RECEIVING => send(stream),
+                _ => unreachable!(),
+            }
         }
         s => {
+            let port = *args
+                .get_one::<u16>("server-port")
+                .expect("Port should be valid");
+            let listener = TcpListener::bind(("0.0.0.0", port))?;
+            let mut stream = listener.accept()?.0;
             let server_mode = &s[7..];
             match server_mode {
                 "sender" => {
-                    todo!()
+                    stream.write_num(SERVER_SENDING)?;
+                    send(stream)
                 }
                 "receiver" => {
-                    todo!()
+                    stream.write_num(SERVER_RECEIVING)?;
+                    receive(stream)
                 }
                 _ => unreachable!(),
             }
         }
     }
+}
+
+fn send(stream: TcpStream) -> io::Result<()> {
+    Ok(())
+}
+
+fn receive(stream: TcpStream) -> io::Result<()> {
+    Ok(())
 }
