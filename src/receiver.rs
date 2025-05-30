@@ -1,5 +1,5 @@
 use std::{io, net::TcpStream};
 
-pub(crate) fn receive(stream: TcpStream) -> io::Result<()> {
+pub fn receive(stream: TcpStream) -> io::Result<()> {
     Ok(())
 }
