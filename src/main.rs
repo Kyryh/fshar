@@ -1,6 +1,7 @@
 use std::{
     io,
     net::{TcpListener, TcpStream},
+    path::PathBuf,
 };
 
 mod command;
@@ -33,8 +34,18 @@ fn main() -> io::Result<()> {
             let server_mode = stream.read_num()?;
 
             match server_mode {
-                SERVER_SENDING => receiver::receive(stream),
-                SERVER_RECEIVING => sender::send(stream),
+                SERVER_SENDING => receiver::receive(
+                    stream,
+                    args.get_one::<PathBuf>("output-folder")
+                        .expect("Folder should be valid")
+                        .as_ref(),
+                ),
+                SERVER_RECEIVING => sender::send(
+                    stream,
+                    args.get_one::<PathBuf>("input-folder")
+                        .expect("Folder should be valid")
+                        .as_ref(),
+                ),
                 _ => unreachable!(),
             }
         }
@@ -48,11 +59,21 @@ fn main() -> io::Result<()> {
             match server_mode {
                 "sender" => {
                     stream.write_num(&SERVER_SENDING)?;
-                    sender::send(stream)
+                    sender::send(
+                        stream,
+                        args.get_one::<PathBuf>("input-folder")
+                            .expect("Folder should be valid")
+                            .as_ref(),
+                    )
                 }
                 "receiver" => {
                     stream.write_num(&SERVER_RECEIVING)?;
-                    receiver::receive(stream)
+                    receiver::receive(
+                        stream,
+                        args.get_one::<PathBuf>("output-folder")
+                            .expect("Folder should be valid")
+                            .as_ref(),
+                    )
                 }
                 _ => unreachable!(),
             }
