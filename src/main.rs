@@ -27,6 +27,14 @@ fn args() -> Command {
                 .required_if_eq("mode", "client")
                 .value_hint(ValueHint::Hostname),
         )
+        .arg(
+            Arg::new("server-port")
+                .help(concat!(
+                    "Server: port to listen on\n",
+                    "Client: port to connect to\n"
+                ))
+                .default_value("931"),
+        )
 }
 
 fn main() {
