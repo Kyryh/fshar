@@ -43,6 +43,7 @@ fn args() -> Command {
                     "\u{2022} `mode` is `server-sender`\n",
                     "\u{2022} `mode` is `client` with a `server-receiver` server\n",
                 ))
+                .value_hint(ValueHint::DirPath)
                 .default_value("./in"),
         )
         .arg(
@@ -52,6 +53,7 @@ fn args() -> Command {
                     "\u{2022} `mode` is `server-receiver`\n",
                     "\u{2022} `mode` is `client` with a `server-sender` server\n",
                 ))
+                .value_hint(ValueHint::DirPath)
                 .default_value("./out"),
         )
 }
