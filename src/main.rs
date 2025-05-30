@@ -65,7 +65,10 @@ fn main() {
 
     let mode = args.get_one::<String>("mode").unwrap();
     match mode.as_ref() {
-        s if s.starts_with("server-") => {
+        "client" => {
+            todo!()
+        }
+        s => {
             let server_mode = &s[7..];
             match server_mode {
                 "sender" => {
@@ -77,9 +80,5 @@ fn main() {
                 _ => unsafe { unreachable_unchecked() },
             }
         }
-        "client" => {
-            todo!()
-        }
-        _ => unsafe { unreachable_unchecked() },
     }
 }
