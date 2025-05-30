@@ -21,6 +21,12 @@ fn args() -> Command {
                 .hide_possible_values(true)
                 .required(true),
         )
+        .arg(
+            Arg::new("server-address")
+                .help("Server's address, required only when `mode` is `client`")
+                .required_if_eq("mode", "client")
+                .value_hint(ValueHint::Hostname),
+        )
 }
 
 fn main() {
