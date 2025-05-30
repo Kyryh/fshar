@@ -1,6 +1,6 @@
 use std::hint::unreachable_unchecked;
 
-use clap::{Arg, Command, ValueHint, builder::styling::Style};
+use clap::{Arg, Command, ValueHint, builder::styling::Style, value_parser};
 
 fn args() -> Command {
     Command::new(env!("CARGO_PKG_NAME"))
@@ -33,6 +33,7 @@ fn args() -> Command {
                     "Server: port to listen on\n",
                     "Client: port to connect to\n"
                 ))
+                .value_parser(value_parser!(u16))
                 .default_value("931"),
         )
         .arg(
