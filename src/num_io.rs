@@ -37,7 +37,7 @@ pub trait NumReader: Read + Sized {
 }
 
 pub trait NumWriter: Write + Sized {
-    fn write_num<T>(&mut self, num: T) -> io::Result<()>
+    fn write_num<T>(&mut self, num: &T) -> io::Result<()>
     where
         T: Number,
     {

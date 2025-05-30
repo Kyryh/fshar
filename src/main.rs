@@ -47,11 +47,11 @@ fn main() -> io::Result<()> {
             let server_mode = &s[7..];
             match server_mode {
                 "sender" => {
-                    stream.write_num(SERVER_SENDING)?;
+                    stream.write_num(&SERVER_SENDING)?;
                     sender::send(stream)
                 }
                 "receiver" => {
-                    stream.write_num(SERVER_RECEIVING)?;
+                    stream.write_num(&SERVER_RECEIVING)?;
                     receiver::receive(stream)
                 }
                 _ => unreachable!(),
