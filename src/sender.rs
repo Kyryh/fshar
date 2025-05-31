@@ -9,6 +9,7 @@ use std::{
 use crate::num_io::{NumReader as _, NumWriter as _};
 
 pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
+    fs::create_dir_all(folder)?;
     let files = collect_files(folder, folder)?;
 
     let num_files = files.len() as u32;
