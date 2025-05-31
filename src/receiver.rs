@@ -3,7 +3,6 @@ use std::{
     io::{self, Read as _, Seek as _, Write as _},
     net::TcpStream,
     path::{Path, PathBuf},
-    time::{Duration, Instant},
 };
 
 use crate::num_io::{NumReader as _, NumWriter as _};
@@ -39,20 +38,18 @@ pub fn receive(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
             file.seek_relative(already_written as i64)?;
             already_written
         };
-
-        let mut elapsed = Instant::now();
+        // 1bp = 0.01%
+        let mut file_bps: Option<u64> = None;
+        let mut stderr = io::stderr().lock();
         while total_read < file_len {
             let read =
                 stream.read(&mut buf[..((file_len - total_read) as usize).min(64 * 1024)])?;
             total_read += read as u64;
             file.write_all(&buf[..read])?;
-            if elapsed.elapsed() > Duration::from_secs(1) {
-                print!(
-                    "\r{rel_path:?}: {:.2}%",
-                    total_read as f32 / file_len as f32 * 100.0
-                );
-                io::stdout().flush()?;
-                elapsed = Instant::now();
+            let current_bps = total_read * 10000 / file_len;
+            if !matches!(file_bps, Some(bps) if bps == current_bps) {
+                file_bps = Some(current_bps);
+                write!(stderr, "\r{rel_path:?}: {:.2}%", current_bps as f32 / 100.0)?;
             }
         }
 
