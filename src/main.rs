@@ -20,8 +20,25 @@ fn main() -> io::Result<()> {
 
     let mode = args.get_one::<String>("mode").unwrap();
     let result = match mode.as_ref() {
-        "client" => client(&args),
-        mode => server(&args, mode),
+        "client" => connect_to_server(&args),
+        // starts with "server-"
+        mode => {
+            let port = *args
+                .get_one::<u16>("server-port")
+                .expect("Port should be valid");
+            let listener = TcpListener::bind(("0.0.0.0", port))?;
+            let keep_listening = args.get_flag("keep-listening");
+            loop {
+                if let Ok((stream, _)) = listener.accept() {
+                    let result = handle_client(stream, &args, mode);
+                    if !keep_listening {
+                        break result;
+                    } else if let Err(err) = result {
+                        eprintln!("\n{}", err);
+                    }
+                }
+            }
+        }
     };
     match result {
         Ok(_) => std::process::exit(0),
@@ -32,7 +49,7 @@ fn main() -> io::Result<()> {
     }
 }
 
-fn client(args: &ArgMatches) -> io::Result<()> {
+fn connect_to_server(args: &ArgMatches) -> io::Result<()> {
     let addr = (
         args.get_one::<String>("server-address")
             .expect("Address should be valid")
@@ -69,39 +86,29 @@ fn client(args: &ArgMatches) -> io::Result<()> {
     }
 }
 
-fn server(args: &ArgMatches, mode: &str) -> Result<(), io::Error> {
-    let port = *args
-        .get_one::<u16>("server-port")
-        .expect("Port should be valid");
-    let listener = TcpListener::bind(("0.0.0.0", port))?;
-    for mut stream in listener.incoming().filter_map(Result::ok) {
-        let server_mode = &mode[7..];
-        match server_mode {
-            "sender" => {
-                stream.write_num(&SERVER_SENDING)?;
-                println!("Sending files to client {}", stream.peer_addr()?);
-                sender::send(
-                    stream,
-                    args.get_one::<PathBuf>("input-folder")
-                        .expect("Folder should be valid")
-                        .as_ref(),
-                )?
-            }
-            "receiver" => {
-                stream.write_num(&SERVER_RECEIVING)?;
-                println!("Receiving files from client {}", stream.peer_addr()?);
-                receiver::receive(
-                    stream,
-                    args.get_one::<PathBuf>("output-folder")
-                        .expect("Folder should be valid")
-                        .as_ref(),
-                )?
-            }
-            _ => unreachable!(),
+fn handle_client(mut stream: TcpStream, args: &ArgMatches, mode: &str) -> io::Result<()> {
+    let server_mode = &mode[7..];
+    match server_mode {
+        "sender" => {
+            stream.write_num(&SERVER_SENDING)?;
+            println!("Sending files to client {}", stream.peer_addr()?);
+            sender::send(
+                stream,
+                args.get_one::<PathBuf>("input-folder")
+                    .expect("Folder should be valid")
+                    .as_ref(),
+            )
         }
-        if !args.get_flag("keep-listening") {
-            break;
+        "receiver" => {
+            stream.write_num(&SERVER_RECEIVING)?;
+            println!("Receiving files from client {}", stream.peer_addr()?);
+            receiver::receive(
+                stream,
+                args.get_one::<PathBuf>("output-folder")
+                    .expect("Folder should be valid")
+                    .as_ref(),
+            )
         }
+        _ => unreachable!(),
     }
-    Ok(())
 }
