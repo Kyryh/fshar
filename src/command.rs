@@ -66,7 +66,8 @@ pub fn args() -> Command {
         .arg(
             Arg::new("keep-listening")
                 .help(concat!(
-                    "If the server should keep listening after sending files to the client",
+                    "If the server should keep listening\n",
+                    "after sending files to the client",
                 ))
                 .long("keep-listening")
                 .short('k')
