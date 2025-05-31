@@ -30,13 +30,13 @@ pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
         let mut total_written = {
             let already_written = stream.read_num::<u64>()?;
             file.seek_relative(already_written as i64)?;
-            already_written as usize
+            already_written
         };
         while let Ok(n) = file.read(&mut buf) {
             if n == 0 {
                 break;
             }
-            total_written += n;
+            total_written += n as u64;
             stream.write_all(&buf[..n])?;
             if elapsed.elapsed() > Duration::from_secs(1) {
                 print!(
