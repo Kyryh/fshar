@@ -34,18 +34,24 @@ fn main() -> io::Result<()> {
             let server_mode = stream.read_num()?;
 
             match server_mode {
-                SERVER_SENDING => receiver::receive(
-                    stream,
-                    args.get_one::<PathBuf>("output-folder")
-                        .expect("Folder should be valid")
-                        .as_ref(),
-                ),
-                SERVER_RECEIVING => sender::send(
-                    stream,
-                    args.get_one::<PathBuf>("input-folder")
-                        .expect("Folder should be valid")
-                        .as_ref(),
-                ),
+                SERVER_SENDING => {
+                    println!("Receiving files from server {}", stream.peer_addr()?);
+                    receiver::receive(
+                        stream,
+                        args.get_one::<PathBuf>("output-folder")
+                            .expect("Folder should be valid")
+                            .as_ref(),
+                    )
+                }
+                SERVER_RECEIVING => {
+                    println!("Sending files to server {}", stream.peer_addr()?);
+                    sender::send(
+                        stream,
+                        args.get_one::<PathBuf>("input-folder")
+                            .expect("Folder should be valid")
+                            .as_ref(),
+                    )
+                }
                 _ => unreachable!(),
             }
         }
@@ -59,6 +65,7 @@ fn main() -> io::Result<()> {
                 match server_mode {
                     "sender" => {
                         stream.write_num(&SERVER_SENDING)?;
+                        println!("Sending files to client {}", stream.peer_addr()?);
                         sender::send(
                             stream,
                             args.get_one::<PathBuf>("input-folder")
@@ -68,6 +75,7 @@ fn main() -> io::Result<()> {
                     }
                     "receiver" => {
                         stream.write_num(&SERVER_RECEIVING)?;
+                        println!("Receiving files from client {}", stream.peer_addr()?);
                         receiver::receive(
                             stream,
                             args.get_one::<PathBuf>("output-folder")

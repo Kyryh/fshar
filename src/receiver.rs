@@ -1,15 +1,14 @@
 use std::{
     fs,
-    io::{self, Read as _, Seek as _, Write as _},
-    net::TcpStream,
+    io::{self, Seek as _, Write as _},
     path::{Path, PathBuf},
 };
 
-use crate::num_io::{NumReader as _, NumWriter as _};
+use crate::num_io::{NumReader, NumWriter};
 
-pub fn receive(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
+pub fn receive(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result<()> {
     let num_files = stream.read_num::<u32>()?;
-    println!("Receiving {num_files} files from {}", stream.peer_addr()?);
+    //println!("Receiving {num_files} files from {}", stream.peer_addr()?);
 
     for _ in 0..num_files {
         let path_len = stream.read_num::<u32>()? as usize;

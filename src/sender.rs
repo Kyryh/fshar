@@ -1,19 +1,18 @@
 use std::{
     fs,
     io::{self, Read as _, Seek as _, Write as _},
-    net::TcpStream,
     path::{Path, PathBuf},
 };
 
-use crate::num_io::{NumReader as _, NumWriter as _};
+use crate::num_io::{NumReader, NumWriter};
 
-pub fn send(mut stream: TcpStream, folder: &Path) -> io::Result<()> {
+pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result<()> {
     fs::create_dir_all(folder)?;
     let files = collect_files(folder, folder)?;
 
     let num_files = files.len() as u32;
     stream.write_num(&num_files)?;
-    println!("Sending {num_files} files to {}", stream.peer_addr()?);
+    //println!("Sending {num_files} files to {}", stream.peer_addr()?);
 
     for (rel_path, abs_path) in files {
         let rel_path_str = rel_path.to_string_lossy();
