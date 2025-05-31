@@ -20,7 +20,18 @@ fn main() -> io::Result<()> {
 
     let mode = args.get_one::<String>("mode").unwrap();
     let result = match mode.as_ref() {
-        "client" => connect_to_server(&args),
+        "client" => {
+            let mut retries = *args.get_one::<i64>("retry").expect("Retry should be valid");
+            loop {
+                let result = connect_to_server(&args);
+                if retries != 0 && result.is_err() {
+                    println!("\n{}, retrying...", result.unwrap_err());
+                    retries -= 1;
+                } else {
+                    break result;
+                }
+            }
+        }
         // starts with "server-"
         mode => {
             let port = *args

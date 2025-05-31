@@ -73,4 +73,17 @@ pub fn args() -> Command {
                 .short('k')
                 .action(ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new("retry")
+                .help(concat!(
+                    "How many times a client should retry\n",
+                    "connecting to the server after an error\n",
+                    "-1 means it will retry indefinitely\n"
+                ))
+                .long("retry")
+                .short('r')
+                .value_parser(-1..)
+                .allow_negative_numbers(true)
+                .default_value("0"),
+        )
 }
