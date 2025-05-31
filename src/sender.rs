@@ -12,7 +12,6 @@ pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result
 
     let num_files = files.len() as u32;
     stream.write_num(&num_files)?;
-    //println!("Sending {num_files} files to {}", stream.peer_addr()?);
 
     for (rel_path, abs_path) in files {
         let rel_path_str = rel_path.to_string_lossy();

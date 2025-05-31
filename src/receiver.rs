@@ -8,7 +8,6 @@ use crate::num_io::{NumReader, NumWriter};
 
 pub fn receive(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result<()> {
     let num_files = stream.read_num::<u32>()?;
-    //println!("Receiving {num_files} files from {}", stream.peer_addr()?);
 
     for _ in 0..num_files {
         let path_len = stream.read_num::<u32>()? as usize;
