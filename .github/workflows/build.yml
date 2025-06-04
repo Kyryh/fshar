@@ -1,0 +1,55 @@
+name: Build and release
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    env:
+      BIN_NAME: fshar
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            binary: $BIN_NAME.exe
+          - os: ubuntu-latest
+            binary: $BIN_NAME
+          - os: macos-latest
+            binary: $BIN_NAME
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build release
+        run: cargo build --release --verbose
+
+      - name: Package files
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "target/release/${{ matrix.binary }}" "dist/"
+          cp {README.md,LICENSE} "dist/"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BIN_NAME }}-${{ runner.os }}
+          path: dist/
+
+  show-builds:
+    name: Show Build Artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-bins
+
+      - name: List built binaries
+        run: ls -lR all-bins
