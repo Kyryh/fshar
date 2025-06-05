@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::num_io::{NumReader, NumWriter};
+use crate::fshar_io::{NumReader, NumWriter};
 
 pub fn receive(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result<()> {
     let num_files = stream.read_num::<u32>()?;

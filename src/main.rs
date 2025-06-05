@@ -5,12 +5,12 @@ use std::{
 };
 
 mod command;
-mod num_io;
+mod fshar_io;
 mod receiver;
 mod sender;
 
 use clap::ArgMatches;
-use num_io::*;
+use fshar_io::*;
 
 const SERVER_SENDING: u8 = 0;
 const SERVER_RECEIVING: u8 = 1;
