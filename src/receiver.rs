@@ -11,8 +11,7 @@ pub fn receive(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Res
 
     for _ in 0..num_files {
         let path_len = stream.read_num::<u32>()? as usize;
-        let mut path_bytes = Vec::with_capacity(path_len);
-        unsafe { path_bytes.set_len(path_len) };
+        let mut path_bytes = vec![0; path_len];
 
         stream.read_exact(&mut path_bytes)?;
         let rel_path = String::from_utf8_lossy(&path_bytes);
