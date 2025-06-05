@@ -1,4 +1,7 @@
-use std::io::{self, Read, Write};
+use std::{
+    fs::File,
+    io::{self, Read, Write},
+};
 
 pub trait Number: Sized {
     fn read_num(reader: &mut impl Read) -> io::Result<Self>;
@@ -47,3 +50,27 @@ pub trait NumWriter: Write + Sized {
 
 impl<R> NumReader for R where R: Read {}
 impl<W> NumWriter for W where W: Write {}
+
+pub struct FileChunks<const N: usize> {
+    file: File,
+    chunk_buf: [u8; N],
+}
+
+impl<const N: usize> FileChunks<N> {
+    pub fn next_chunk(&mut self) -> io::Result<Option<&[u8]>> {
+        match self.file.read(&mut self.chunk_buf) {
+            Ok(0) => Ok(None),
+            Ok(n) => Ok(Some(&self.chunk_buf[..n])),
+            Err(err) => Err(err),
+        }
+    }
+}
+
+impl<const N: usize> From<File> for FileChunks<N> {
+    fn from(value: File) -> Self {
+        Self {
+            chunk_buf: [0; N],
+            file: value,
+        }
+    }
+}

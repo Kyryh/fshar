@@ -1,10 +1,10 @@
 use std::{
     fs,
-    io::{self, Read as _, Seek as _, Write as _},
+    io::{self, Seek as _, Write as _},
     path::{Path, PathBuf},
 };
 
-use crate::fshar_io::{NumReader, NumWriter};
+use crate::fshar_io::{FileChunks, NumReader, NumWriter};
 
 pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result<()> {
     fs::create_dir_all(folder)?;
@@ -22,7 +22,6 @@ pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result
         let mut file = fs::File::open(&abs_path)?;
         let file_len = fs::metadata(&abs_path)?.len();
         stream.write_num(&file_len)?;
-        let mut buf = [0; 64 * 1024];
         let mut total_written = {
             let already_written = stream.read_num::<u64>()?;
             file.seek_relative(already_written as i64)?;
@@ -31,12 +30,11 @@ pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result
         // 1bp = 0.01%
         let mut file_bps: Option<u64> = None;
         let mut stderr = io::stderr().lock();
-        while let Ok(n) = file.read(&mut buf) {
-            if n == 0 {
-                break;
-            }
-            total_written += n as u64;
-            stream.write_all(&buf[..n])?;
+        let mut chunks = FileChunks::<{ 64 * 1024 }>::from(file);
+
+        while let Some(chunk) = chunks.next_chunk()? {
+            total_written += chunk.len() as u64;
+            stream.write_all(chunk)?;
             let current_bps = total_written * 10000 / file_len;
             if !matches!(file_bps, Some(bps) if bps == current_bps) {
                 file_bps = Some(current_bps);
