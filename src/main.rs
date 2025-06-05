@@ -38,6 +38,7 @@ fn main() -> io::Result<()> {
                 .get_one::<u16>("server-port")
                 .expect("Port should be valid");
             let listener = TcpListener::bind(("0.0.0.0", port))?;
+            println!("Listening on port {port}");
             let keep_listening = args.get_flag("keep-listening");
             loop {
                 if let Ok((stream, _)) = listener.accept() {
