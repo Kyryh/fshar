@@ -86,4 +86,16 @@ pub fn args() -> Command {
                 .allow_negative_numbers(true)
                 .default_value("0"),
         )
+        .arg(
+            Arg::new("overwrite")
+                .help(concat!(
+                    "If files should be overwritten when receiving\n",
+                    "Useful for receiving updated copies of a file\n",
+                    "but it makes it unable to complete partially\n",
+                    "downloaded files\n",
+                ))
+                .long("overwrite")
+                .short('v')
+                .action(ArgAction::SetTrue),
+        )
 }

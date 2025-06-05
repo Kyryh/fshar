@@ -83,6 +83,7 @@ fn connect_to_server(args: &ArgMatches) -> io::Result<()> {
                 args.get_one::<PathBuf>("output-folder")
                     .expect("Folder should be valid")
                     .as_ref(),
+                args.get_flag("overwrite"),
             )
         }
         SERVER_RECEIVING => {
@@ -119,6 +120,7 @@ fn handle_client(mut stream: TcpStream, args: &ArgMatches, mode: &str) -> io::Re
                 args.get_one::<PathBuf>("output-folder")
                     .expect("Folder should be valid")
                     .as_ref(),
+                args.get_flag("overwrite"),
             )
         }
         _ => unreachable!(),

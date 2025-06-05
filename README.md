@@ -34,6 +34,10 @@ fshar [OPTIONS] <mode> [server-address]
                                       connecting to the server after an error
                                       -1 means it will retry indefinitely
                                       [default: 0]
+-v, --overwrite                      If files should be overwritten when receiving
+                                       Useful for receiving updated copies of a file
+                                       but it makes it unable to complete partially
+                                       downloaded files
 -h, --help                           Print help
 -V, --version                        Print version
 ```

@@ -6,7 +6,11 @@ use std::{
 
 use crate::fshar_io::{NumReader, NumWriter};
 
-pub fn receive(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result<()> {
+pub fn receive(
+    mut stream: impl NumWriter + NumReader,
+    folder: &Path,
+    overwrite: bool,
+) -> io::Result<()> {
     let num_files = stream.read_num::<u32>()?;
 
     for _ in 0..num_files {
@@ -23,14 +27,16 @@ pub fn receive(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Res
         }
 
         let mut file = fs::OpenOptions::new()
-            .append(true)
+            .append(!overwrite)
+            .write(overwrite)
+            .truncate(overwrite)
             .create(true)
             .open(full_path)?;
 
         let file_len = stream.read_num::<u64>()?;
         let mut buf = [0; 64 * 1024];
         let mut total_read = {
-            let already_written = file.metadata()?.len();
+            let already_written = if overwrite { 0 } else { file.metadata()?.len() };
             stream.write_num(&already_written)?;
             file.seek_relative(already_written as i64)?;
             already_written
