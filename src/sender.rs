@@ -50,17 +50,16 @@ pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result
     Ok(())
 }
 
-fn collect_files(base: &Path, current: &Path) -> std::io::Result<Vec<(PathBuf, PathBuf)>> {
+fn collect_files(base: &Path, current: &Path) -> io::Result<Vec<(PathBuf, PathBuf)>> {
     let mut files = Vec::new();
     for entry in fs::read_dir(current)? {
-        let entry = entry?;
-        let path = entry.path();
+        let path = entry?.path();
         if path.is_dir() {
             files.extend(collect_files(base, &path)?);
         } else {
             // Relative path from base
-            let rel_path = path.strip_prefix(base).unwrap().to_path_buf();
-            files.push((rel_path, path));
+            let rel_path = path.strip_prefix(base).unwrap();
+            files.push((rel_path.to_owned(), path));
         }
     }
     Ok(files)
