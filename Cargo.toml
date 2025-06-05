@@ -1,6 +1,6 @@
 [package]
 name = "fshar"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Kyryh donovkyrylo@gmail.com"]
 license-file = "LICENSE"
 description = "File sharing via TCP"
