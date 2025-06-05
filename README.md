@@ -68,7 +68,7 @@ fshar [OPTIONS] <mode> [server-address]
   $ fshar client 8.8.8.8 -i ./my-files 
   ```
 
-- Receive files local `server-sender` running on port 5050 retry 5 times if it fails 
+- Receive files from local `server-sender` running on port 5050 and retry up to 5 times if it fails 
   ```
   $ fshar client 127.0.0.1 --port 5050 -r 5
   ```
