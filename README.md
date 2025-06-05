@@ -19,7 +19,7 @@ fshar [OPTIONS] <mode> [server-address]
 ```
 -p, --server-port <server-port>      Server: port to listen on
                                       Client: port to connect to
-                                      [default: 931]
+                                      [default: 4931]
 -i, --input-folder <input-folder>    Folder to use when sending files, in case:
                                       • `mode` is `server-sender`
                                       • `mode` is `client` with a `server-receiver` server

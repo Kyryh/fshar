@@ -35,7 +35,7 @@ pub fn args() -> Command {
                 .long("server-port")
                 .short('p')
                 .value_parser(value_parser!(u16))
-                .default_value("931"),
+                .default_value("4931"),
         )
         .arg(
             Arg::new("input-folder")
