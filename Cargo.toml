@@ -2,7 +2,7 @@
 name = "fshar"
 version = "1.0.1"
 authors = ["Kyryh donovkyrylo@gmail.com"]
-license-file = "LICENSE"
+license = "GPL-3.0-or-later"
 description = "File sharing via TCP"
 readme = "README.md"
 homepage = "https://github.com/Kyryh/fshar"
