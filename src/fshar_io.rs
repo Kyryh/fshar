@@ -57,6 +57,15 @@ pub struct FileChunks<const N: usize> {
 }
 
 impl<const N: usize> FileChunks<N> {
+    pub fn send_next_chunk(&mut self, stream: &mut impl Write) -> io::Result<Option<usize>> {
+        match self.next_chunk()? {
+            Some(chunk) => {
+                stream.write_all(chunk)?;
+                Ok(Some(chunk.len()))
+            }
+            None => Ok(None),
+        }
+    }
     pub fn next_chunk(&mut self) -> io::Result<Option<&[u8]>> {
         match self.file.read(&mut self.chunk_buf) {
             Ok(0) => Ok(None),

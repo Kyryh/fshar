@@ -32,9 +32,8 @@ pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result
         let mut stderr = io::stderr().lock();
         let mut chunks = FileChunks::<{ 64 * 1024 }>::from(file);
 
-        while let Some(chunk) = chunks.next_chunk()? {
-            total_written += chunk.len() as u64;
-            stream.write_all(chunk)?;
+        while let Some(n) = chunks.send_next_chunk(&mut stream)? {
+            total_written += n as u64;
             let current_bps = total_written * 10000 / file_len;
             if !matches!(file_bps, Some(bps) if bps == current_bps) {
                 file_bps = Some(current_bps);
