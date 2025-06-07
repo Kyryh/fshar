@@ -1,6 +1,6 @@
 use std::{
     fs,
-    io::{self, Seek as _, Write as _},
+    io::{self, Write as _},
     path::{Path, PathBuf},
 };
 
@@ -16,25 +16,24 @@ pub fn send(mut stream: impl NumWriter + NumReader, folder: &Path) -> io::Result
     for (rel_path, abs_path) in files {
         let rel_path_str = rel_path.to_string_lossy();
         let path_bytes = rel_path_str.as_bytes();
+
+        // Send path info to the receiver
         stream.write_num(&(path_bytes.len() as u32))?;
         stream.write_all(path_bytes)?;
 
-        let mut file = fs::File::open(&abs_path)?;
-        let file_len = fs::metadata(&abs_path)?.len();
-        stream.write_num(&file_len)?;
-        let mut total_written = {
-            let already_written = stream.read_num::<u64>()?;
-            file.seek_relative(already_written as i64)?;
-            already_written
-        };
+        let mut chunks = FileChunks::<{ 64 * 1024 }>::sender_file(fs::File::open(&abs_path)?)?;
+
+        // Send the total size of the file..
+        stream.write_num(&chunks.total_len())?;
+        // ..and receive how much of it the
+        // receiver has already downlaoded
+        chunks.seek_to(stream.read_num::<u64>()?)?;
+
         // 1bp = 0.01%
         let mut file_bps: Option<u64> = None;
         let mut stderr = io::stderr().lock();
-        let mut chunks = FileChunks::<{ 64 * 1024 }>::from(file);
 
-        while let Some(n) = chunks.send_next_chunk(&mut stream)? {
-            total_written += n as u64;
-            let current_bps = total_written * 10000 / file_len;
+        while let Some(current_bps) = chunks.send_next_chunk(&mut stream)? {
             if !matches!(file_bps, Some(bps) if bps == current_bps) {
                 file_bps = Some(current_bps);
                 write!(stderr, "\r{rel_path:?}: {:.2}%", current_bps as f32 / 100.0)?;

@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::fshar_io::{NumReader, NumWriter};
+use crate::fshar_io::{FileChunks, NumReader, NumWriter};
 
 pub fn receive(
     mut stream: impl NumWriter + NumReader,
@@ -26,30 +26,24 @@ pub fn receive(
             fs::create_dir_all(parent)?;
         }
 
-        let mut file = fs::OpenOptions::new()
-            .append(!overwrite)
-            .write(overwrite)
-            .truncate(overwrite)
-            .create(true)
-            .open(full_path)?;
+        let mut chunks = FileChunks::<{ 64 * 1024 }>::receiver_file(
+            fs::OpenOptions::new()
+                .append(!overwrite)
+                .write(overwrite)
+                .truncate(overwrite)
+                .create(true)
+                .open(full_path)?,
+            // Read the total size of the file..
+            stream.read_num::<u64>()?,
+        )?;
 
-        let file_len = stream.read_num::<u64>()?;
-        let mut buf = [0; 64 * 1024];
-        let mut total_read = {
-            let already_written = if overwrite { 0 } else { file.metadata()?.len() };
-            stream.write_num(&already_written)?;
-            file.seek_relative(already_written as i64)?;
-            already_written
-        };
-        // 1bp = 0.01%
+        // ..and write how much of it we already downloaded
+        stream.write_num(&chunks.current_len())?;
+
         let mut file_bps: Option<u64> = None;
         let mut stderr = io::stderr().lock();
-        while total_read < file_len {
-            let read =
-                stream.read(&mut buf[..((file_len - total_read) as usize).min(64 * 1024)])?;
-            total_read += read as u64;
-            file.write_all(&buf[..read])?;
-            let current_bps = total_read * 10000 / file_len;
+
+        while let Some(current_bps) = chunks.receive_next_chunk(&mut stream)? {
             if !matches!(file_bps, Some(bps) if bps == current_bps) {
                 file_bps = Some(current_bps);
                 write!(stderr, "\r{rel_path:?}: {:.2}%", current_bps as f32 / 100.0)?;
