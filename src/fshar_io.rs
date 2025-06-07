@@ -1,6 +1,7 @@
 use std::{
     fs::File,
-    io::{self, Read, Seek, Write},
+    io::{self, Read, Seek as _, Write},
+    path::{Path, PathBuf},
 };
 
 pub trait Number: Sized {
@@ -30,26 +31,43 @@ impl_num!(u16);
 impl_num!(u32);
 impl_num!(u64);
 
-pub trait NumReader: Read + Sized {
+pub trait FSharReader: Read + Sized {
     fn read_num<T>(&mut self) -> io::Result<T>
     where
         T: Number,
     {
         T::read_num(self)
     }
+
+    fn read_path(&mut self) -> io::Result<PathBuf> {
+        let path_len = self.read_num::<u32>()? as usize;
+        let mut bytes = vec![0; path_len];
+
+        self.read_exact(&mut bytes)?;
+        let path_str = String::from_utf8_lossy(&bytes);
+        Ok(PathBuf::from(path_str.as_ref()))
+    }
 }
 
-pub trait NumWriter: Write + Sized {
+pub trait FSharWriter: Write + Sized {
     fn write_num<T>(&mut self, num: &T) -> io::Result<()>
     where
         T: Number,
     {
         num.write_num(self)
     }
+
+    fn write_path(&mut self, path: &Path) -> io::Result<()> {
+        let path_str = path.to_string_lossy();
+        let bytes = path_str.as_bytes();
+
+        self.write_num(&(bytes.len() as u32))?;
+        self.write_all(bytes)
+    }
 }
 
-impl<R> NumReader for R where R: Read {}
-impl<W> NumWriter for W where W: Write {}
+impl<R> FSharReader for R where R: Read {}
+impl<W> FSharWriter for W where W: Write {}
 
 pub struct FileChunks<const N: usize> {
     file: File,
